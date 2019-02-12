@@ -13,6 +13,9 @@ var urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// templateVars contains the whole object urlDatabase,
+// templateVars gets taken/rendered to urls_index
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
