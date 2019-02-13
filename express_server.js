@@ -1,8 +1,10 @@
-var express = require("express");
-var app = express();
-var PORT = 8080; // default port 8080
+const express = require("express");
+const app = express();
+const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 // creates shortened URL string
 function generateRandomString() {
@@ -15,7 +17,7 @@ function generateRandomString() {
 app.set("view engine", "ejs");
 
 // starting database
-var urlDatabase = {
+const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
@@ -36,8 +38,8 @@ app.get("/urls/new", (req, res) => {
 // Both are inserted to the urlDatabase
 // redirects to main url listing page
 app.post("/urls", (req, res) => {
-  var short = generateRandomString();
-  var long = req.body.longURL;
+  let short = generateRandomString();
+  let long = req.body.longURL;
   urlDatabase[short] = long;
   res.redirect("/urls/" + short);
 });
