@@ -42,7 +42,13 @@ app.post("/urls", (req, res) => {
   // generateRandomString(res);
   // urlDatabase += req.body.value;
   console.log(urlDatabase);
-  res.redirect("/urls/" + short); // Respond with 'Ok' (we will replace this)
+  // res.redirect("/urls/" + short); // Respond with 'Ok' (we will replace this)
+  const longURL = req.body.longURL;
+  if (!longURL.startsWith("http://")) {
+    res.redirect("http://" + longURL);
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 app.get("/", (req, res) => {
