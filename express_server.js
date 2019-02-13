@@ -34,12 +34,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  // console.log(req.body); // Log the POST request body to the console
   var short = generateRandomString();
   var long = req.body.longURL;
   urlDatabase[short] = long;
 
-  console.log(urlDatabase);
+  // console.log(urlDatabase);
   const longURL = req.body.longURL;
   res.redirect("/urls/" + short);
 });
@@ -76,8 +76,10 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {
   // find index of url and splice it out, then redirect to main url list
-  delete urlDatabase[req.body.params];
+  // const index = Object.keys(urlDatabase);
+  // console.log(req.params);
+  delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
