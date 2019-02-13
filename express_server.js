@@ -62,10 +62,6 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 app.get("/u/:shortURL", (req, res) => {
   // console.log(req);
   let shortURL = req.params.shortURL;
@@ -76,10 +72,20 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:shortURL", (req, res) => {
+  let newLong = req.body.longURL;
+  urlDatabase[req.params.shortURL] = newLong;
+  res.redirect("/urls");
+});
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   // find index of url and splice it out, then redirect to main url list
   // const index = Object.keys(urlDatabase);
   // console.log(req.params);
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
