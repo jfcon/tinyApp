@@ -76,8 +76,8 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/urls/:shortURL/delete", (res, req) => {
+app.get("/urls/:shortURL/delete", (req, res) => {
   // find index of url and splice it out, then redirect to main url list
-
+  delete urlDatabase[req.body.params];
   res.redirect("/urls");
 });
