@@ -35,20 +35,13 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-
   var short = generateRandomString();
   var long = req.body.longURL;
   urlDatabase[short] = long;
-  // generateRandomString(res);
-  // urlDatabase += req.body.value;
+
   console.log(urlDatabase);
-  // res.redirect("/urls/" + short); // Respond with 'Ok' (we will replace this)
   const longURL = req.body.longURL;
-  if (!longURL.startsWith("http://")) {
-    res.redirect("http://" + longURL);
-  } else {
-    res.redirect(longURL);
-  }
+  res.redirect("/urls/" + short);
 });
 
 app.get("/", (req, res) => {
@@ -71,4 +64,14 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  // console.log(req);
+  let shortURL = req.params.shortURL;
+  let longURL = urlDatabase[shortURL];
+  if (!longURL.startsWith("http://")) {
+    longURL = "http://" + longURL;
+  }
+  res.redirect(longURL);
 });
