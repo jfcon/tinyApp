@@ -57,7 +57,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  console.log(req.params);
+  // console.log(req.params);
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
@@ -74,4 +74,10 @@ app.get("/u/:shortURL", (req, res) => {
     longURL = "http://" + longURL;
   }
   res.redirect(longURL);
+});
+
+app.get("/urls/:shortURL/delete", (res, req) => {
+  // find index of url and splice it out, then redirect to main url list
+
+  res.redirect("/urls");
 });
