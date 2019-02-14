@@ -32,7 +32,6 @@ app.get("/urls", (req, res) => {
 //go to New page, renders the new url ejs
 app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["user"] };
-  console.log(req.cookies["user"]);
   res.render("urls_new", templateVars);
 });
 
@@ -100,7 +99,6 @@ app.post("/login", (req, res) => {
 
 // logout POST
 app.post("/logout", (req, res) => {
-  console.log(req.cookies);
   res.clearCookie("user");
   res.redirect("/urls");
 });
