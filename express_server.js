@@ -25,23 +25,15 @@ const urlDatabase = {
 // templateVars contains the whole object urlDatabase,
 // templateVars gets taken/rendered to urls_index
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies["user"] };
   res.render("urls_index", templateVars);
 });
 
-//go to New page, renders the new.ejs
+//go to New page, renders the new url ejs
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-// newly added URL (a new value) is given a Random String as a key.
-// Both are inserted to the urlDatabase
-// redirects to main url listing page
-app.post("/urls", (req, res) => {
-  let short = generateRandomString();
-  let long = req.body.longURL;
-  urlDatabase[short] = long;
-  res.redirect("/urls/" + short);
+  let templateVars = { username: req.cookies["user"] };
+  console.log(req.cookies["user"]);
+  res.render("urls_new", templateVars);
 });
 
 // root page which redirects to URL Listing Page
@@ -53,11 +45,11 @@ app.get("urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// see an individual URL's page
+// see an individual URL's page.
 // pass through the long and short URLs to the page so they
 // can be used there
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { username: req.cookies["user"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
@@ -76,6 +68,16 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+// newly added URL (a new value) is given a Random String as a key.
+// Both are inserted to the urlDatabase
+// redirects to main url listing page
+app.post("/urls", (req, res) => {
+  let short = generateRandomString();
+  let long = req.body.longURL;
+  urlDatabase[short] = long;
+  res.redirect("/urls/" + short);
+});
+
 // Updating a url, but keep the short url key
 app.post("/urls/:shortURL", (req, res) => {
   let newLong = req.body.longURL;
@@ -87,6 +89,13 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+});
+
+// login form
+app.post("/login", (req, res) => {
+  let user = req.body.username;
+  res.cookie("user", user);
+  res.redirect("/");
 });
 
 // if app can run, console log will print a confirmation
