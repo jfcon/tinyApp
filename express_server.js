@@ -98,6 +98,13 @@ app.post("/login", (req, res) => {
   res.redirect("/");
 });
 
+// logout POST
+app.post("/logout", (req, res) => {
+  console.log(req.cookies);
+  res.clearCookie("user");
+  res.redirect("/urls");
+});
+
 // if app can run, console log will print a confirmation
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
