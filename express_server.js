@@ -110,9 +110,8 @@ app.get("/register", (req, res) => {
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
   let long = req.body.longURL;
-  urlDatabase[short] = { longURL: long, userID: req.cookies["user_id"] };
-  // urlDatabase[short].userID = req.cookies["user_id"];
-  console.log(urlDatabase[short]);
+  let id = req.cookies["user_id"];
+  urlDatabase[short] = { longURL: long, userID: id.id };
   res.redirect("/urls/" + short);
 });
 
