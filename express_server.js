@@ -85,7 +85,7 @@ app.get("/login", (req, res) => {
 
 // root page which redirects to URL Listing Page
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("urls.json", (req, res) => {
@@ -110,14 +110,10 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   let longURL = urlDatabase[shortURL].longURL;
-  console.log("TEST ", longURL);
   // if there is no "http://" at the beginning of the
   // longURL, this will add it.
   if (!longURL.startsWith("http://")) {
-    console.log("it does not starts with http");
     longURL = "http://" + longURL;
-  } else {
-    console.log("it starts with that");
   }
   res.redirect(longURL);
 });
@@ -141,15 +137,25 @@ app.post("/urls", (req, res) => {
 
 // Updating a url, but keep the short url key
 app.post("/urls/:shortURL", (req, res) => {
-  let newLong = req.body.longURL;
-  urlDatabase[req.params.shortURL] = newLong;
-  res.redirect("/urls");
+  let currentUser = { id: req.cookies["user_id"] };
+  if (!authenticateUser(currentUser.email, currentUser.password)) {
+    res.status(403).send('<p>Invalid email or password</p><a href="/urls">Go Back</a>');
+  } else {
+    let newLong = req.body.longURL;
+    urlDatabase[req.params.shortURL] = newLong;
+    res.redirect("/urls");
+  }
 });
 
 // deletes a specific key/value from the urlDatabase
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  let currentUser = { id: req.cookies["user_id"] };
+  if (!authenticateUser(currentUser.email, currentUser.password)) {
+    res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+  } else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
 });
 
 // login form
