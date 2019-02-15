@@ -135,7 +135,7 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls/" + short);
 });
 
-// Updating a url, but keep the short url key
+// Assigned user can update their urls, but keep the short url key
 app.post("/urls/:shortURL", (req, res) => {
   let currentUser = { id: req.cookies["user_id"] };
   if (!authenticateUser(currentUser.email, currentUser.password)) {
@@ -147,7 +147,7 @@ app.post("/urls/:shortURL", (req, res) => {
   }
 });
 
-// deletes a specific key/value from the urlDatabase
+// only the owner can delete a specific Short URL listing
 app.post("/urls/:shortURL/delete", (req, res) => {
   let currentUser = { id: req.cookies["user_id"] };
   if (!authenticateUser(currentUser.email, currentUser.password)) {
