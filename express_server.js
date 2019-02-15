@@ -47,8 +47,12 @@ function authenticateUser(email, password) {
 
 //page that lists all the URLs
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, id: req.cookies["user_id"] };
-  res.render("urls_index", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { urls: urlDatabase, id: req.cookies["user_id"] };
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+  }
 });
 
 //go to New page, renders the new url ejs
@@ -80,8 +84,12 @@ app.get("urls.json", (req, res) => {
 // pass through the long and short URLs to the page so they
 // can be used there
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
-  res.render("urls_show", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+  }
 });
 
 // on single URL page, linked URL will
@@ -112,6 +120,7 @@ app.post("/urls", (req, res) => {
   let long = req.body.longURL;
   let id = req.cookies["user_id"];
   urlDatabase[short] = { longURL: long, userID: id.id };
+  console.log(urlDatabase);
   res.redirect("/urls/" + short);
 });
 
