@@ -5,6 +5,9 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
+const bcrypt = require("bcrypt");
+// const password = "purple-monkey-dinosaur"; // found in the req.params
+// const hashedPassword = bcrypt.hashSync(password, 10);
 
 // creates shortened URL string
 function generateRandomString() {
@@ -174,18 +177,24 @@ app.post("/login", (req, res) => {
 // Sending new user to the User Database
 app.post("/register", (req, res) => {
   // if either email or password is left blank, return error
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   if (!req.body.email || !req.body.password) {
     res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
-  }
-  for (let key in users) {
-    if (users[key].email === req.body.email || users[key].password === req.body.email) {
-      // if email already exists in db
-      res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
-    } else {
-      //if new user is 100% New
+  } else {
+    let found = false;
+    for (let key in users) {
+      if (users[key].email === req.body.email) {
+        // if email already exists in db, found is no longer False
+        found = true;
+        res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
+      }
+    }
+    if (!found) {
+      // only runs if found is False
       let id = generateRandomString();
-      users[id] = { id: id, email: req.body.email, password: req.body.password };
+      users[id] = { id: id, email: req.body.email, password: hashedPassword };
       res.cookie("user_id", users[id]);
+      console.log(users);
       res.redirect("/urls");
     }
   }
