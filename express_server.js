@@ -68,11 +68,11 @@ app.get("/urls", (req, res) => {
 
 //go to New page, renders the new url ejs
 app.get("/urls/new", (req, res) => {
-  if (){
-  let templateVars = { id: req.cookies["user_id"] };
-  res.render("urls_new", templateVars);
+  if (req.cookies.user_id) {
+    let templateVars = { id: req.cookies["user_id"] };
+    res.render("urls_new", templateVars);
   } else {
-    res.render("login")
+    res.redirect("/login");
   }
 });
 
