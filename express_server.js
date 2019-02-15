@@ -13,13 +13,34 @@ function generateRandomString() {
     .substr(2, 6);
 }
 
+// checks the user db for a correct and previously existing email and password.
+function authenticateUser(email, password) {
+  for (let key in users) {
+    if (users[key].email === email && users[key].password === password) {
+      return users[key];
+    }
+  }
+}
+
+//filters and displays the URLs by the User ID
+function urlsForUser(id) {
+  let urls = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      urls[key] = urlDatabase[key].longURL;
+    }
+  }
+  console.log(urls);
+  return urls;
+}
+
 // tells the Express app to use EJS as its templating engine.
 app.set("view engine", "ejs");
 
 // starting URL database
 const urlDatabase = {
   b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "userRandomID" }
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
 // User Database
@@ -36,19 +57,11 @@ const users = {
   }
 };
 
-// checks the user db for a correct and previously existing email and password.
-function authenticateUser(email, password) {
-  for (var key in users) {
-    if (users[key].email === email && users[key].password === password) {
-      return users[key];
-    }
-  }
-}
-
-//page that lists all the URLs
+//page that lists all the URLs by the logged-in User
 app.get("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
-    let templateVars = { urls: urlDatabase, id: req.cookies["user_id"] };
+    urls = urlsForUser(req.cookies["user_id"].id);
+    let templateVars = { urls: urls, id: req.cookies["user_id"] };
     res.render("urls_index", templateVars);
   } else {
     res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
@@ -120,7 +133,6 @@ app.post("/urls", (req, res) => {
   let long = req.body.longURL;
   let id = req.cookies["user_id"];
   urlDatabase[short] = { longURL: long, userID: id.id };
-  console.log(urlDatabase);
   res.redirect("/urls/" + short);
 });
 
@@ -171,7 +183,7 @@ app.post("/register", (req, res) => {
 // logout clears the cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // if app can run, console log will print a confirmation
