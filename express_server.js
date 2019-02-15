@@ -30,7 +30,6 @@ function urlsForUser(id) {
       urls[key] = urlDatabase[key].longURL;
     }
   }
-  console.log(urls);
   return urls;
 }
 
@@ -110,11 +109,15 @@ app.get("/urls/:shortURL", (req, res) => {
 // user to longURL
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  let longURL = urlDatabase[shortURL];
+  let longURL = urlDatabase[shortURL].longURL;
+  console.log("TEST ", longURL);
   // if there is no "http://" at the beginning of the
   // longURL, this will add it.
   if (!longURL.startsWith("http://")) {
+    console.log("it does not starts with http");
     longURL = "http://" + longURL;
+  } else {
+    console.log("it starts with that");
   }
   res.redirect(longURL);
 });
@@ -168,15 +171,17 @@ app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
   }
-  if (authenticateUser(req.body.email)) {
-    // if email already exists in db
-    res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
-  } else {
-    //if new user is 100% New
-    let id = generateRandomString();
-    users[id] = { id: id, email: req.body.email, password: req.body.password };
-    res.cookie("user_id", users[id]);
-    res.redirect("/urls");
+  for (let key in users) {
+    if (users[key].email === req.body.email || users[key].password === req.body.email) {
+      // if email already exists in db
+      res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
+    } else {
+      //if new user is 100% New
+      let id = generateRandomString();
+      users[id] = { id: id, email: req.body.email, password: req.body.password };
+      res.cookie("user_id", users[id]);
+      res.redirect("/urls");
+    }
   }
 });
 
