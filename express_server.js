@@ -18,8 +18,8 @@ app.set("view engine", "ejs");
 
 // starting URL database
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "userRandomID" }
 };
 
 // User Database
@@ -27,7 +27,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "123"
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -36,26 +36,11 @@ const users = {
   }
 };
 
-// checks the user db for a previously existing email
-function emailCheck(newEmail) {
-  for (let id in users) {
-    let value = users[id];
-    // console.log(newEmail, value.email);
-    if (newEmail === value.email) {
-      /// email already exists
-      return true;
-    }
-  }
-}
-
-// checks the user db for a previously existing email
-function pwCheck(newPw) {
-  for (let id in users) {
-    let value = users[id];
-    // console.log(newEmail, value.email);
-    if (newPw === value.password) {
-      /// email already exists
-      return true;
+// checks the user db for a correct and previously existing email and password.
+function authenticateUser(email, password) {
+  for (var key in users) {
+    if (users[key].email === email && users[key].password === password) {
+      return users[key];
     }
   }
 }
@@ -95,7 +80,7 @@ app.get("urls.json", (req, res) => {
 // pass through the long and short URLs to the page so they
 // can be used there
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
   res.render("urls_show", templateVars);
 });
 
@@ -125,7 +110,9 @@ app.get("/register", (req, res) => {
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
   let long = req.body.longURL;
-  urlDatabase[short] = long;
+  urlDatabase[short] = { longURL: long, userID: req.cookies["user_id"] };
+  // urlDatabase[short].userID = req.cookies["user_id"];
+  console.log(urlDatabase[short]);
   res.redirect("/urls/" + short);
 });
 
@@ -146,20 +133,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
-  // if either checks fail, return 403
-  // if successful, create cookie and log in
-  if (emailCheck(email) && pwCheck(password)) {
-    res.cookie("user_id", email);
+  let user = authenticateUser(email, password);
+  if (user) {
+    res.cookie("user_id", user);
     res.redirect("/urls");
   } else {
     res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
   }
-});
-
-// logout clears the cookie
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect("/urls");
 });
 
 // Sending new user to the User Database
@@ -168,16 +148,22 @@ app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
   }
-  if (emailCheck(req.body.email)) {
+  if (authenticateUser(req.body.email)) {
     // if email already exists in db
     res.status(400).send('<p>Invalid email or password</p><a href="/register">Go Back</a>');
   } else {
     //if new user is 100% New
     let id = generateRandomString();
     users[id] = { id: id, email: req.body.email, password: req.body.password };
-    res.cookie("user_id", users[id].email);
+    res.cookie("user_id", users[id]);
     res.redirect("/urls");
   }
+});
+
+// logout clears the cookie
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
 });
 
 // if app can run, console log will print a confirmation
