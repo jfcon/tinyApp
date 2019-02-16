@@ -41,39 +41,47 @@ app.set("view engine", "ejs");
 
 // starting URL database
 const urlDatabase = {
-  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "id1" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "id2" }
 };
 
 // User Database
 const users = {
-  userRandomID: {
-    id: "userRandomID",
+  id1: {
+    id: "id1",
     email: "user@example.com",
-    password: "123"
+    password: bcrypt.hashSync("123", 10)
   },
-  user2RandomID: {
-    id: "user2RandomID",
+  id2: {
+    id: "id2",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("123", 10)
   }
 };
 
 //page that lists all the URLs by the logged-in User
 app.get("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
-    urls = urlsForUser(req.cookies["user_id"].id);
-    let templateVars = { urls: urls, id: req.cookies["user_id"] };
-    res.render("urls_index", templateVars);
+    let id = req.cookies["user_id"];
+    let email = users[id].email;
+    if (id) {
+      let urls = urlsForUser(id);
+      let templateVars = { urls: urls, id: id, email: email };
+      res.render("urls_index", templateVars);
+    } else {
+      res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+    }
   } else {
-    res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+    res.redirect("/login");
   }
 });
 
 //go to New page, renders the new url ejs
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.user_id) {
-    let templateVars = { id: req.cookies["user_id"] };
+  let id = req.cookies["user_id"];
+  let email = users[id].email;
+  if (id) {
+    let templateVars = { email: email, id: id };
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -82,7 +90,8 @@ app.get("/urls/new", (req, res) => {
 
 //Login page
 app.get("/login", (req, res) => {
-  let templateVars = { id: req.cookies["user_id"] };
+  let id = req.cookies["user_id"];
+  let templateVars = { id: id };
   res.render("login", templateVars);
 });
 
@@ -99,8 +108,10 @@ app.get("urls.json", (req, res) => {
 // pass through the long and short URLs to the page so they
 // can be used there
 app.get("/urls/:shortURL", (req, res) => {
-  if (req.cookies["user_id"]) {
-    let templateVars = { id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
+  let id = req.cookies["user_id"];
+  let email = users[id].email;
+  if (id) {
+    let templateVars = { email: email, id: id, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
     res.render("urls_show", templateVars);
   } else {
     res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
@@ -123,7 +134,8 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Open Registration page
 app.get("/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, id: req.cookies["user_id"] };
+  let id = req.cookies["user_id"];
+  let templateVars = { urls: urlDatabase, id: id };
   res.render("registration", templateVars);
 });
 
@@ -134,7 +146,7 @@ app.post("/urls", (req, res) => {
   let short = generateRandomString();
   let long = req.body.longURL;
   let id = req.cookies["user_id"];
-  urlDatabase[short] = { longURL: long, userID: id.id };
+  urlDatabase[short] = { longURL: long, userID: id };
   res.redirect("/urls/" + short);
 });
 
@@ -165,13 +177,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
-  let user = authenticateUser(email, password);
-  if (user) {
-    res.cookie("user_id", user);
-    res.redirect("/urls");
-  } else {
-    res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
+  for (var key in users) {
+    if (email === users[key].email && bcrypt.compareSync(password, users[key].password)) {
+      res.cookie("user_id", key);
+      return res.redirect("/urls");
+    }
   }
+  res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
 });
 
 // Sending new user to the User Database
@@ -193,8 +205,7 @@ app.post("/register", (req, res) => {
       // only runs if found is False
       let id = generateRandomString();
       users[id] = { id: id, email: req.body.email, password: hashedPassword };
-      res.cookie("user_id", users[id]);
-      console.log(users);
+      res.cookie("user_id", id);
       res.redirect("/urls");
     }
   }
