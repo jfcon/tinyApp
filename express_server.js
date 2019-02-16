@@ -80,7 +80,7 @@ app.get("/urls/new", (req, res) => {
   if (id) {
     let email = users[id].email;
     let templateVars = { email: email, id: id };
-    res.render("urls_new", templateVars);
+    return res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
   }
@@ -88,15 +88,24 @@ app.get("/urls/new", (req, res) => {
 
 //Login page
 app.get("/login", (req, res) => {
-  let email = "";
-  let id = req.session.user_id;
-  let templateVars = { id: id, email: email };
-  res.render("login", templateVars);
+  //if already logged in (cookie), redirect to /urls
+  if (req.session.user_id) {
+    return res.redirect("/urls");
+  } else {
+    let email = "";
+    let id = req.session.user_id;
+    let templateVars = { id: id, email: email };
+    res.render("login", templateVars);
+  }
 });
 
 // root page which redirects to URL Listing Page
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  if (!req.session.user_id) {
+    //if already logged in (cookie), redirect to /urls
+    return res.redirect("/login");
+  }
+  res.redirect("/urls");
 });
 
 app.get("urls.json", (req, res) => {
@@ -130,9 +139,14 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Open Registration page
 app.get("/register", (req, res) => {
-  let id = req.session.user_id;
-  let templateVars = { urls: urlDatabase, id: id };
-  res.render("registration", templateVars);
+  //if already logged in (cookie), redirect to /urls
+  if (req.session.user_id) {
+    return res.redirect("/urls");
+  } else {
+    let id = req.session.user_id;
+    let templateVars = { urls: urlDatabase, id: id };
+    res.render("registration", templateVars);
+  }
 });
 
 // new URL is given a Random String as its key and given values of the Creator's ID and LongURL
@@ -215,7 +229,8 @@ app.post("/register", (req, res) => {
 // logout clears the cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/login");
+  // redirects to /urls (as per instructions) which in turn redirects to /login, since there is no cookie
+  res.redirect("/urls");
 });
 
 // if app can run, console log will print a confirmation
