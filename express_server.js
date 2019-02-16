@@ -3,8 +3,14 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
+const cookieSession = require("cookie-session");
+app.use(
+  cookieSession({
+    name: "user_id",
+    keys: ["1", "2"]
+  })
+);
+
 const bcrypt = require("bcrypt");
 // const password = "purple-monkey-dinosaur"; // found in the req.params
 // const hashedPassword = bcrypt.hashSync(password, 10);
@@ -14,6 +20,10 @@ function generateRandomString() {
   return Math.random()
     .toString(36)
     .substr(2, 6);
+}
+
+function getUrlObject(shortURL) {
+  return urlDatabase[shortURL];
 }
 
 // checks the user db for a correct and previously existing email and password.
@@ -61,8 +71,8 @@ const users = {
 
 //page that lists all the URLs by the logged-in User
 app.get("/urls", (req, res) => {
-  if (req.cookies["user_id"]) {
-    let id = req.cookies["user_id"];
+  if (req.session.user_id) {
+    let id = req.session.user_id;
     let email = users[id].email;
     if (id) {
       let urls = urlsForUser(id);
@@ -78,9 +88,9 @@ app.get("/urls", (req, res) => {
 
 //go to New page, renders the new url ejs
 app.get("/urls/new", (req, res) => {
-  let id = req.cookies["user_id"];
-  let email = users[id].email;
+  let id = req.session.user_id;
   if (id) {
+    let email = users[id].email;
     let templateVars = { email: email, id: id };
     res.render("urls_new", templateVars);
   } else {
@@ -90,8 +100,9 @@ app.get("/urls/new", (req, res) => {
 
 //Login page
 app.get("/login", (req, res) => {
-  let id = req.cookies["user_id"];
-  let templateVars = { id: id };
+  let email = "";
+  let id = req.session.user_id;
+  let templateVars = { id: id, email: email };
   res.render("login", templateVars);
 });
 
@@ -108,9 +119,9 @@ app.get("urls.json", (req, res) => {
 // pass through the long and short URLs to the page so they
 // can be used there
 app.get("/urls/:shortURL", (req, res) => {
-  let id = req.cookies["user_id"];
-  let email = users[id].email;
+  let id = req.session.user_id;
   if (id) {
+    let email = users[id].email;
     let templateVars = { email: email, id: id, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
     res.render("urls_show", templateVars);
   } else {
@@ -134,7 +145,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Open Registration page
 app.get("/register", (req, res) => {
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
   let templateVars = { urls: urlDatabase, id: id };
   res.render("registration", templateVars);
 });
@@ -145,27 +156,26 @@ app.get("/register", (req, res) => {
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
   let long = req.body.longURL;
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
   urlDatabase[short] = { longURL: long, userID: id };
   res.redirect("/urls/" + short);
 });
 
 // Assigned user can update their urls, but keep the short url key
 app.post("/urls/:shortURL", (req, res) => {
-  let currentUser = { id: req.cookies["user_id"] };
-  if (!authenticateUser(currentUser.email, currentUser.password)) {
+  if (!getUrlObject(req.params.shortURL.userID) === req.session.user_id) {
     res.status(403).send('<p>Invalid email or password</p><a href="/urls">Go Back</a>');
   } else {
     let newLong = req.body.longURL;
-    urlDatabase[req.params.shortURL] = newLong;
+    urlDatabase[req.params.shortURL].longURL = newLong;
     res.redirect("/urls");
   }
 });
 
 // only the owner can delete a specific Short URL listing
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let currentUser = { id: req.cookies["user_id"] };
-  if (!authenticateUser(currentUser.email, currentUser.password)) {
+  let currentUser = { id: req.session.user_id };
+  if (!getUrlObject(req.params.shortURL).userID === req.session.user_id) {
     res.status(403).send('<p>Invalid email or password</p><a href="/login">Go Back</a>');
   } else {
     delete urlDatabase[req.params.shortURL];
@@ -179,7 +189,7 @@ app.post("/login", (req, res) => {
   let password = req.body.password;
   for (var key in users) {
     if (email === users[key].email && bcrypt.compareSync(password, users[key].password)) {
-      res.cookie("user_id", key);
+      req.session.user_id = key;
       return res.redirect("/urls");
     }
   }
@@ -205,7 +215,7 @@ app.post("/register", (req, res) => {
       // only runs if found is False
       let id = generateRandomString();
       users[id] = { id: id, email: req.body.email, password: hashedPassword };
-      res.cookie("user_id", id);
+      req.session.user_id = id;
       res.redirect("/urls");
     }
   }
