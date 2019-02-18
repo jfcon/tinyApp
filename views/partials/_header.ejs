@@ -1,0 +1,19 @@
+<!--Top Title-->
+<h1 align="center"><a href="/urls" style="color: #000000" alt="Back to Home">TinyApp</a></h1>
+
+<!--Login Verification-->
+<% if (id) { %>
+<p align="right">Welcome, <%= email %>!</p>
+<form name="Logout" action="/logout" method="POST" align="right">
+  <button style="border-radius: 18px" type="submit" class="btn btn-primary">Logout</button>
+</form>
+<% } else { %>
+<p><form action="/register" method="GET" align="right">
+  <button style="border-radius: 18px" type="submit" class="btn btn-primary" style="height: 35px">Register</button>
+</form>
+</p>
+<p>
+<form action="/login" method="GET" align="right">
+  <button style="border-radius: 18px" type="submit" class="btn btn-primary" style="height: 35px">Login Page</button>
+</form></p>
+<% } %>

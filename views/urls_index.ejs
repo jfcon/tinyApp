@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+        <!-- Bootstrap CSS -->
+        <link
+          rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+          crossorigin="anonymous"
+        />
+        <title>TinyApp</title>
+      </head>
+
+      <body style="font-size:20px; padding:50px;">
+        <header><% include ./partials/_header %></header>
+
+        <table cellpadding="15">
+          <thead>
+            <tr align = "center">
+              <th><u>URLs</u></th>
+              <th><u>Shortened Form</u></th>
+              <th><u>Options</u></th>
+            </tr>
+          </thead>
+          <% Object.keys(urls).forEach(function(prop) { %>
+          <tr>
+            <td align = "center"><%= urls[prop] %></td>
+            <td align = "center"><%= prop %></td>
+            <td align = "center">
+              <button style="border-radius: 18px" type="button"><a href = "/urls/<%= prop %>">View/Edit</button></a><br />
+              <form method="POST" action="/urls/<%= prop %>/delete"><button style="border-radius: 18px" type="submit">Delete</button></form>
+            </td>
+            <% }); %>
+          </tr>
+        </table>
+
+        <br /><br />
+        <h3><a href="/urls/new">Shorten your link by clicking here!</a></h3>
+      </body>
+    </html>
+  </head>
+</html>

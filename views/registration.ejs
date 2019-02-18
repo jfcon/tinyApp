@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+        <!-- Bootstrap CSS -->
+        <link
+          rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+          crossorigin="anonymous"
+        />
+        <title>TinyApp</title>
+      </head>
+
+      <body style="font-size:20px; padding:50px;">
+        <header><% include ./partials/_header %></header>
+
+        <form action="/register" method="POST">
+          <p>
+            <label for="email">Enter your email:</label>
+            <input name="email" type="email" placeholder="name@example.com" style="width: 225px; text-align: center; border-radius: 18px" />
+          </p>
+          <p>
+            <label for="password">Enter your password:</label>
+            <input name="password" type="password" style="width: 225px; border-radius: 18px" />
+          </p>
+          <button style="border-radius: 18px" type="submit" class="btn btn-primary" style="height: 35px">Submit</button>
+        </form>
+
+        <br /><br />
+        <h3><a href="/urls/new">Shorten your link by clicking here!</a></h3>
+        <h3>
+          <a href="/urls">Back to List</a>
+        </h3>
+      </body>
+    </html>
+  </head>
+</html>
